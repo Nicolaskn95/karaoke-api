@@ -13,8 +13,10 @@ function fixEncoding(str: string): string {
     const hasReplacementChar = str.includes("");
     // Check for common mojibake patterns (double-encoded UTF-8)
     const hasMojibake = /Ã[¡-¿À-ÿ]|â€|Ã§|Ã£|Ã©|Ã³|Ãº|Ãª|Ã´/.test(str);
+    // Check for specific encoding issues like "coraêêo" (should be "coração")
+    const hasEncodingIssue = /êêo|êo\b|coraêêo|coraêo/.test(str);
 
-    if (hasReplacementChar || hasMojibake) {
+    if (hasReplacementChar || hasMojibake || hasEncodingIssue) {
       // When we have "", the original bytes were lost during UTF-8 decoding
       // We need to work with what we have and try to reconstruct
 
@@ -56,7 +58,7 @@ function fixEncoding(str: string): string {
       // We can try to fix common patterns
       let fixed = str;
 
-      // Common Portuguese word patterns that might have "" instead of accented chars
+      // Common Portuguese word patterns that might have encoding issues
       const patterns = [
         // "cad" + "" likely means "cadê"
         { pattern: /cad/g, replacement: "cadê" },
@@ -68,6 +70,12 @@ function fixEncoding(str: string): string {
         { pattern: /cancao/g, replacement: "canção" },
         { pattern: /acao/g, replacement: "ação" },
         { pattern: /cao/g, replacement: "ção" },
+        // Corrigir "coraêêo" -> "coração"
+        { pattern: /coraêêo/g, replacement: "coração" },
+        { pattern: /coraêo/g, replacement: "coração" },
+        // Corrigir outros padrões comuns
+        { pattern: /êêo/g, replacement: "ção" },
+        { pattern: /êo\b/g, replacement: "ção" },
       ];
 
       // Apply pattern replacements
@@ -83,7 +91,19 @@ function fixEncoding(str: string): string {
       fixed = fixed.replace(/cad\s/g, "cadê ");
       fixed = fixed.replace(/cad/g, "cadê");
 
-      if (fixed !== str && !fixed.includes("")) {
+      // Corrigir padrões específicos de encoding
+      // "coraêêo" -> "coração" (prioridade alta - fazer antes de padrões gerais)
+      fixed = fixed.replace(/coraêêo/gi, "coração");
+      fixed = fixed.replace(/coraêo/gi, "coração");
+
+      // Corrigir padrão geral: "êêo" -> "ção" (quando no final de palavra)
+      // Isso corrige palavras como "coraêêo", "canêêo", etc.
+      fixed = fixed.replace(/([a-z])êêo/gi, "$1ção");
+      fixed = fixed.replace(/([a-z])êo\b/gi, "$1ção");
+
+      // Sempre aplicar correções de padrões conhecidos, mesmo sem ""
+      // Isso corrige casos como "coraêêo" que não têm "" mas são erros de encoding
+      if (fixed !== str) {
         return fixed;
       }
 
@@ -94,6 +114,9 @@ function fixEncoding(str: string): string {
         // Try common replacements for "" in Portuguese text
         // "cad" + "" = "cadê" (ê = 0xEA in Latin1, becomes "" in UTF-8 if misread)
         fixed = fixed.replace(/cad/g, "cadê");
+
+        // Corrigir "coraêêo" -> "coração"
+        fixed = fixed.replace(/coraêêo/gi, "coração");
 
         // If still has "", try to remove it or replace with space
         if (fixed.includes("")) {
@@ -107,6 +130,20 @@ function fixEncoding(str: string): string {
       if (fixed !== str) {
         return fixed;
       }
+    }
+
+    // Sempre aplicar correções de padrões conhecidos, mesmo sem problemas de encoding detectados
+    // Isso corrige casos como "coraêêo" que não têm "" mas são erros de encoding
+    let alwaysFixed = str;
+
+    // Corrigir padrões específicos que sempre devem ser corrigidos
+    alwaysFixed = alwaysFixed.replace(/coraêêo/gi, "coração");
+    alwaysFixed = alwaysFixed.replace(/coraêo/gi, "coração");
+    alwaysFixed = alwaysFixed.replace(/([a-z])êêo/gi, "$1ção");
+    alwaysFixed = alwaysFixed.replace(/([a-z])êo\b/gi, "$1ção");
+
+    if (alwaysFixed !== str) {
+      return alwaysFixed;
     }
 
     return str;
