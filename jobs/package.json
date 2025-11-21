@@ -1,0 +1,23 @@
+{
+  "name": "local-automation-backend",
+  "version": "1.0.0",
+  "description": "Backend para receber numeros de uma web app e digita-los em outro app usando nut-js.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "rpa",
+    "automation",
+    "express",
+    "nut-js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.19.2"
+  }
+}
