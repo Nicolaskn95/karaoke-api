@@ -18,6 +18,11 @@ export interface PaginationParams {
   limit?: number;
 }
 
+export interface SortParams {
+  sortBy?: "id" | "artista" | "musica" | "arquivo" | "inicio";
+  sortOrder?: "asc" | "desc";
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

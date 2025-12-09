@@ -11,6 +11,8 @@ export async function getMusics(req: Request, res: Response) {
       musica,
       id,
       numero,
+      sortBy,
+      sortOrder,
     } = req.query;
 
     // Parâmetros de paginação
@@ -37,11 +39,21 @@ export async function getMusics(req: Request, res: Response) {
       filters.id = idFilter;
     }
 
+    // Parâmetros de ordenação
+    const validSortFields = ["id", "artista", "musica"];
+    const sortField = (sortBy as string) || "id";
+    const sortDirection = (sortOrder as string)?.toLowerCase() === "desc" ? -1 : 1;
+    
+    // Validar campo de ordenação
+    const finalSortField = validSortFields.includes(sortField) ? sortField : "id";
+    const sort: any = {};
+    sort[finalSortField] = sortDirection;
+
     const MusicModel = mongoose.connection.collection("musics");
 
     const cursor = MusicModel.find(filters, {
       // Tentar preservar dados binários se possível
-    });
+    }).sort(sort);
 
     const data = await cursor.skip(skip).limit(limit).toArray();
 

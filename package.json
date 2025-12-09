@@ -13,10 +13,12 @@
     "seed": "ts-node seed-musics.ts"
   },
   "dependencies": {
+    "@types/multer": "^2.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mongodb": "^7.0.0",
     "mongoose": "^8.20.0",
+    "multer": "^2.0.2",
     "tsc": "^2.0.4"
   },
   "devDependencies": {
