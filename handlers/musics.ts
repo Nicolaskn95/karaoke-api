@@ -70,7 +70,12 @@ export async function getMusics(req: Request, res: Response) {
           docCopy[key] = doc[key]?.toString() || doc[key];
         } else if (typeof doc[key] === "string") {
           // Aplicar correção de encoding
-          docCopy[key] = decodeURIComponent(doc[key]);
+          let value = decodeURIComponent(doc[key]);
+          // Se for o campo 'musica', deixar a primeira letra maiúscula
+          if (key === "musica" && value.length > 0) {
+            value = value.charAt(0).toUpperCase() + value.slice(1);
+          }
+          docCopy[key] = value;
         } else {
           docCopy[key] = doc[key];
         }
