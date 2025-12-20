@@ -85,7 +85,17 @@ export async function getMusics(req: Request, res: Response) {
     });
 
     const response: PaginatedResponse<Music> = {
-      data: formattedData as Music[],
+      data:
+        sortField === "musica"
+          ? [...(formattedData as Music[])].sort((a, b) => {
+              if (!a.musica || !b.musica) return 0;
+              if (sortDirection === 1) {
+                return a.musica.localeCompare(b.musica);
+              } else {
+                return b.musica.localeCompare(a.musica);
+              }
+            })
+          : (formattedData as Music[]),
       pagination: {
         page,
         limit,
