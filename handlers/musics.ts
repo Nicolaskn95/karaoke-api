@@ -70,7 +70,12 @@ export async function getMusics(req: Request, res: Response) {
           docCopy[key] = doc[key]?.toString() || doc[key];
         } else if (typeof doc[key] === "string") {
           // Aplicar correção de encoding
-          docCopy[key] = decodeURIComponent(doc[key]);
+          let value = decodeURIComponent(doc[key]);
+          // Se for o campo 'musica', deixar a primeira letra maiúscula
+          if (key === "musica" && value.length > 0) {
+            value = value.charAt(0).toUpperCase() + value.slice(1);
+          }
+          docCopy[key] = value;
         } else {
           docCopy[key] = doc[key];
         }
@@ -80,7 +85,17 @@ export async function getMusics(req: Request, res: Response) {
     });
 
     const response: PaginatedResponse<Music> = {
-      data: formattedData as Music[],
+      data:
+        sortField === "musica"
+          ? [...(formattedData as Music[])].sort((a, b) => {
+              if (!a.musica || !b.musica) return 0;
+              if (sortDirection === 1) {
+                return a.musica.localeCompare(b.musica);
+              } else {
+                return b.musica.localeCompare(a.musica);
+              }
+            })
+          : (formattedData as Music[]),
       pagination: {
         page,
         limit,
